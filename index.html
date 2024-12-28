@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f9fc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            width: 400px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        .card-form label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .card-form input,
+        .card-form select,
+        .card-form textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .field-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .field-group label {
+            flex: 1;
+        }
+
+        .field-group input,
+        .field-group select {
+            flex: 1;
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #2cbf6d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .generate-btn:hover {
+            background-color: #24a55c;
+        }
+
+        .result p {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .result textarea {
+            width: 100%;
+            height: 100px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 10px;
+            font-size: 14px;
+            resize: none;
+            background-color: #f2f2f2;
+        }
+
+        #bin-random {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .generate-btn {
+            width: 48%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Card Generator</h1>
+        <form class="card-form" onsubmit="return false;">
+            <label for="bin-method">BIN Method</label>
+            <select id="bin-method" onchange="toggleBinInput()">
+                <option value="manual">Manual</option>
+                <option value="random">Random</option>
+            </select>
+
+            <input type="text" id="bin" placeholder="Enter BIN (6 digits)" maxlength="6" />
+
+            <select id="bin-random" style="display: none;">
+                <option value="510510">USA - MasterCard</option>
+                <option value="520082">India - MasterCard</option>
+                <option value="411111">Canada - Visa</option>
+                <option value="454347">Japan - Visa</option>
+                <option value="621983">China - UnionPay</option>
+                <option value="548008">Brazil - MasterCard</option>
+                <option value="357994">Singapore - JCB</option>
+                <option value="601100">USA - Discover</option>
+                <option value="222100">UK - MasterCard</option>
+            </select>
+
+            <div class="field-group">
+                <label for="month">MONTH</label>
+                <select id="month">
+                    <option value="random">Random</option>
+                    <option>01</option>
+                    <option>02</option>
+                    <option>03</option>
+                    <option>04</option>
+                    <option>05</option>
+                    <option>06</option>
+                    <option>07</option>
+                    <option>08</option>
+                    <option>09</option>
+                    <option>10</option>
+                    <option>11</option>
+                    <option>12</option>
+                </select>
+
+                <label for="year">YEAR</label>
+                <select id="year">
+                    <option value="random">Random</option>
+                    <option>2024</option>
+                    <option>2025</option>
+                    <option>2026</option>
+                </select>
+            </div>
+
+            <div class="field-group">
+                <label for="cvv-method">CVV Method</label>
+                <select id="cvv-method" onchange="toggleCvvInput()">
+                    <option value="manual">Manual</option>
+                    <option value="auto">Automatic</option>
+                </select>
+
+                <label for="cvv">CVV</label>
+                <input type="text" id="cvv" placeholder="Enter CVV" maxlength="3" disabled />
+            </div>
+
+            <label for="quantity">QUANTITY</label>
+            <input type="number" id="quantity" min="1" max="100" value="10" />
+
+            <label for="format">FORMAT</label>
+            <select id="format">
+                <option value="pipe">PIPE</option>
+                <option value="json">JSON</option>
+                <option value="xml">XML</option>
+            </select>
+
+            <div class="button-group">
+                <button type="button" class="generate-btn" onclick="generateCards()">Generate</button>
+                <button type="button" class="generate-btn" onclick="validateCards()">Cek Validasi</button>
+            </div>
+        </form>
+
+        <div class="result">
+            <p>RESULT</p>
+            <textarea id="result" readonly>**********</textarea>
+        </div>
+
+        <div class="result">
+            <p>VERIFIED</p>
+            <textarea id="verified" readonly>**********</textarea>
+        </div>
+    </div>
+
+    <script>
+        function toggleBinInput() {
+            const binMethod = document.getElementById("bin-method").value;
+            const binInput = document.getElementById("bin");
+            const binRandom = document.getElementById("bin-random");
+
+            if (binMethod === "random") {
+                binInput.style.display = "none";
+                binInput.value = ""; // Reset manual BIN input
+                binRandom.style.display = "block";
+            } else {
+                binInput.style.display = "block";
+                binRandom.style.display = "none";
+            }
+        }
+
+        function toggleCvvInput() {
+            const cvvMethod = document.getElementById("cvv-method").value;
+            const cvvInput = document.getElementById("cvv");
+            if (cvvMethod === "auto") {
+                cvvInput.value = generateCvv();
+                cvvInput.disabled = true;
+            } else {
+                cvvInput.value = "";
+                cvvInput.disabled = false;
+            }
+        }
+
+        function generateCvv() {
+            return Math.floor(100 + Math.random() * 900).toString();
+        }
+
+        function isLuhnValid(cardNumber) {
+            let sum = 0;
+            let shouldDouble = false;
+
+            for (let i = cardNumber.length - 1; i >= 0; i--) {
+                let digit = parseInt(cardNumber.charAt(i), 10);
+
+                if (shouldDouble) {
+                    digit *= 2;
+                    if (digit > 9) digit -= 9;
+                }
+
+                sum += digit;
+                shouldDouble = !shouldDouble;
+            }
+
+            return sum % 10 === 0;
+        }
+
+        function generateCardNumber(bin) {
+            let cardNumber = bin;
+            while (cardNumber.length < 15) {
+                cardNumber += Math.floor(Math.random() * 10);
+            }
+
+            let checkDigit = 0;
+            while (!isLuhnValid(cardNumber + checkDigit)) {
+                checkDigit++;
+            }
+
+            return cardNumber + checkDigit;
+        }
+
+        function isDateValid(month, year) {
+            const currentDate = new Date();
+            const inputDate = new Date(year, month - 1);
+
+            return inputDate >= currentDate;
+        }
+
+        function generateCards() {
+            const binMethod = document.getElementById("bin-method").value;
+            const bin = binMethod === "manual" ? document.getElementById("bin").value : getRandomBin();
+            const month = document.getElementById("month").value;
+            const year = document.getElementById("year").value;
+            const quantity = parseInt(document.getElementById("quantity").value, 10);
+            const cvvMethod = document.getElementById("cvv-method").value;
+            const format = document.getElementById("format").value;
+            const resultArea = document.getElementById("result");
+
+            if (binMethod === "manual" && !/^\d{6}$/.test(bin)) {
+                alert("Please enter a valid 6-digit BIN.");
+                return;
+            }
+
+            let results = "";
+
+            for (let i = 0; i < quantity; i++) {
+                const generatedMonth = month === "random" ? String(Math.floor(1 + Math.random() * 12)).padStart(2, "0") : month;
+                const generatedYear = year === "random" ? String(2024 + Math.floor(Math.random() * 3)) : year;
+
+                if (!isDateValid(generatedMonth, generatedYear)) {
+                    continue;
+                }
+
+                const cardNumber = generateCardNumber(bin);
+                const generatedCvv = cvvMethod === "auto" ? generateCvv() : document.getElementById("cvv").value || "XXX";
+
+                if (format === "pipe") {
+                    results += `${cardNumber}|${generatedMonth}|${generatedYear}|${generatedCvv}\n`;
+                } else if (format === "json") {
+                    results += JSON.stringify({
+                        cardNumber,
+                        month: generatedMonth,
+                        year: generatedYear,
+                        cvv: generatedCvv
+                    }) + "\n";
+                } else if (format === "xml") {
+                    results += `<card>\n<cardNumber>${cardNumber}</cardNumber>\n<month>${generatedMonth}</month>\n<year>${generatedYear}</year>\n<cvv>${generatedCvv}</cvv>\n</card>\n`;
+                }
+            }
+
+            resultArea.value = results;
+        }
+
+        function getRandomBin() {
+            const bins = [
+                "510510", "520082", "411111", "454347", "621983", "548008", "357994", "601100", "222100"
+            ];
+            return bins[Math.floor(Math.random() * bins.length)];
+        }
+
+        function validateCards() {
+            const generatedCards = document.getElementById("result").value.split("\n").filter(card => card.trim() !== "");
+            const verifiedResults = document.getElementById("verified");
+
+            let verifiedList = "";
+
+            for (const card of generatedCards) {
+                const cardDetails = card.split("|");
+                const cardNumber = cardDetails[0];
+                const month = cardDetails[1];
+                const year = cardDetails[2];
+                const cvv = cardDetails[3];
+
+                if (isLuhnValid(cardNumber) && isDateValid(month, year)) {
+                    verifiedList += `${cardNumber}|${month}|${year}|${cvv} - VALID\n`;
+                } else {
+                    verifiedList += `${cardNumber}|${month}|${year}|${cvv} - INVALID\n`;
+                }
+            }
+
+            verifiedResults.value = verifiedList;
+        }
+    </script>
+</body>
+</html>
